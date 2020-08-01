@@ -55,17 +55,21 @@ public class JUnitManagedIntegrationTest {
     @Test
     public void givenJUnitManagedServer_whenMatchingURL_thenCorrect() throws IOException {
 
+
+        //when urlPathMatching("/baeldung/.*") return should be 200, headers ... , body should be ...
         stubFor(get(urlPathMatching("/baeldung/.*"))
                 .willReturn(aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", APPLICATION_JSON)
                         .withBody("\"testing-library\": \"WireMock\"")));
 
+        // run it now
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpGet request = new HttpGet(String.format("http://localhost:%s/baeldung/wiremock", port));
         HttpResponse httpResponse = httpClient.execute(request);
         String stringResponse = convertHttpResponseToString(httpResponse);
 
+        //check the results
         verify(getRequestedFor(urlEqualTo(BAELDUNG_WIREMOCK_PATH)));
         assertEquals(200, httpResponse.getStatusLine().getStatusCode());
         assertEquals(APPLICATION_JSON, httpResponse.getFirstHeader("Content-Type").getValue());
@@ -74,6 +78,8 @@ public class JUnitManagedIntegrationTest {
 
     @Test
     public void givenJUnitManagedServer_whenMatchingHeaders_thenCorrect() throws IOException {
+
+        //when urlPathEqualTo(BAELDUNG_WIREMOCK_PATH) return should be 503, headers ... , body should be  !!! Service Unavailable !!! ...
         stubFor(get(urlPathEqualTo(BAELDUNG_WIREMOCK_PATH))
                 .withHeader("Accept", matching("text/.*"))
                 .willReturn(aResponse()
@@ -81,12 +87,14 @@ public class JUnitManagedIntegrationTest {
                         .withHeader("Content-Type", "text/html")
                         .withBody("!!! Service Unavailable !!!")));
 
+        // run it now
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpGet request = new HttpGet(String.format("http://localhost:%s/baeldung/wiremock", port));
         request.addHeader("Accept", "text/html");
         HttpResponse httpResponse = httpClient.execute(request);
         String stringResponse = convertHttpResponseToString(httpResponse);
 
+        //check the results
         verify(getRequestedFor(urlEqualTo(BAELDUNG_WIREMOCK_PATH)));
         assertEquals(503, httpResponse.getStatusLine().getStatusCode());
         assertEquals("text/html", httpResponse.getFirstHeader("Content-Type").getValue());
